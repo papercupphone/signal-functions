@@ -4,7 +4,7 @@ import Dao from './dao'
 
 const dao = new Dao()
 
-export default async function handler(event: any) {
+export async function handler(event: any) {
     const apiGatewayManagementApi = new ApiGatewayManagementApi({
         apiVersion: '2018-11-29',
         endpoint: event.requestContext.domainName + '/' + event.requestContext.stage
