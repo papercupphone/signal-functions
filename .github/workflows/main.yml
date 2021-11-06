@@ -38,6 +38,6 @@ jobs:
           aws-region: eu-west-1
       - name: Deploy stack
         run: |
-          npm install && npm install --dev && npm run build
+          npm install && npm install --include=dev && npm run build
           sam build
           sam deploy --stack-name papercupphone --s3-bucket papercupphone --capabilities CAPABILITY_IAM --parameter-overrides AccountSid=${{secrets.TWILIO_ACCOUNT_SID}} AuthToken=${{secrets.TWILIO_AUTH_TOKEN}}
