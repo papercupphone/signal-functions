@@ -1,0 +1,319 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  signal-functions:
+    Serverless lambda functions to connect peers for Paper Cup Phone
+  dynamo-db:
+  DynamoDb tables to store socketIds and room names
+
+Parameters:
+  RoomTableName:
+    Type: String
+    Default: 'room'
+    Description: stores room name and socketIds connected to that room
+    MinLength: 3
+    MaxLength: 50
+    AllowedPattern: ^[A-Za-z_]+$
+    ConstraintDescription: 'Required. Can be characters and underscore only. No numbers or special characters allowed.'
+  UserTableName:
+    Type: String
+    Default: 'user'
+    Description: stores user's socketId and room name connected
+    MinLength: 3
+    MaxLength: 50
+    AllowedPattern: ^[A-Za-z_]+$
+    ConstraintDescription: 'Required. Can be characters and underscore only. No numbers or special characters allowed.'
+  AccountSid:
+    Type: String
+  AuthToken:
+    Type: String
+
+Resources:
+  PaperCupPhoneSignalSocket:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: PaperCupPhoneSignalSocket
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: "$request.body.action"
+  ConnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref PaperCupPhoneSignalSocket
+      RouteKey: $connect
+      AuthorizationType: NONE
+      OperationName: ConnectRoute
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref ConnectInteg
+  ConnectInteg:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref PaperCupPhoneSignalSocket
+      Description: Connect Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub:
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ConnectFunction.Arn}/invocations
+  DisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref PaperCupPhoneSignalSocket
+      RouteKey: $disconnect
+      AuthorizationType: NONE
+      OperationName: DisconnectRoute
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref DisconnectInteg
+  DisconnectInteg:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref PaperCupPhoneSignalSocket
+      Description: Disconnect Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub:
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DisconnectFunction.Arn}/invocations
+  MessageRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref PaperCupPhoneSignalSocket
+      RouteKey: message
+      AuthorizationType: NONE
+      OperationName: SendRoute
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref MessageInteg
+  MessageInteg:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref PaperCupPhoneSignalSocket
+      Description: Send Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub:
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MessageFunction.Arn}/invocations
+  JoinRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref PaperCupPhoneSignalSocket
+      RouteKey: join
+      AuthorizationType: NONE
+      OperationName: SendRoute
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref JoinInteg
+  JoinInteg:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref PaperCupPhoneSignalSocket
+      Description: Send Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub:
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JoinFunction.Arn}/invocations
+  Deployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+      - ConnectRoute
+      - DisconnectRoute
+      - MessageRoute
+      - JoinRoute
+    Properties:
+      ApiId: !Ref PaperCupPhoneSignalSocket
+  Stage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      StageName: prod
+      Description: prod Stage
+      DeploymentId: !Ref Deployment
+      ApiId: !Ref PaperCupPhoneSignalSocket
+  RoomTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "name"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "name"
+          KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      SSESpecification:
+        SSEEnabled: True
+      TableName: !Ref RoomTableName
+  UserTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      SSESpecification:
+        SSEEnabled: True
+      TableName: !Ref UserTableName
+  ConnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: connect.handler
+      MemorySize: 256
+      Runtime: nodejs14.x
+      Timeout: 60
+      Environment:
+        Variables:
+          USER_TABLE_NAME: !Ref UserTableName
+          ROOM_TABLE_NAME: !Ref RoomTableName
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UserTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref RoomTableName
+        - Statement:
+            - Effect: Allow
+              Action:
+                - 'execute-api:ManageConnections'
+              Resource:
+                - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PaperCupPhoneSignalSocket}/*'
+  ConnectPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - PaperCupPhoneSignalSocket
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ConnectFunction
+      Principal: apigateway.amazonaws.com
+  DisconnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: disconnect.handler
+      MemorySize: 256
+      Runtime: nodejs14.x
+      Timeout: 60
+      Environment:
+        Variables:
+          USER_TABLE_NAME: !Ref UserTableName
+          ROOM_TABLE_NAME: !Ref RoomTableName
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UserTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref RoomTableName
+        - Statement:
+            - Effect: Allow
+              Action:
+                - 'execute-api:ManageConnections'
+              Resource:
+                - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PaperCupPhoneSignalSocket}/*'
+  DisconnectPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - PaperCupPhoneSignalSocket
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ConnectFunction
+      Principal: apigateway.amazonaws.com
+  MessageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: message.handler
+      Timeout: 60
+      MemorySize: 256
+      Runtime: nodejs14.x
+      Environment:
+        Variables:
+          USER_TABLE_NAME: !Ref UserTableName
+          ROOM_TABLE_NAME: !Ref RoomTableName
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UserTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref RoomTableName
+        - Statement:
+            - Effect: Allow
+              Action:
+                - 'execute-api:ManageConnections'
+              Resource:
+                - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PaperCupPhoneSignalSocket}/*'
+  MessagePermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - PaperCupPhoneSignalSocket
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MessageFunction
+      Principal: apigateway.amazonaws.com
+  JoinFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: join.handler
+      Timeout: 60
+      MemorySize: 256
+      Runtime: nodejs14.x
+      Environment:
+        Variables:
+          USER_TABLE_NAME: !Ref UserTableName
+          ROOM_TABLE_NAME: !Ref RoomTableName
+          TWILIO_ACCOUNT_SID: !Ref AccountSid
+          TWILIO_AUTH_TOKEN: !Ref AuthToken
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UserTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref RoomTableName
+        - Statement:
+            - Effect: Allow
+              Action:
+                - 'execute-api:ManageConnections'
+              Resource:
+                - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PaperCupPhoneSignalSocket}/*'
+  JoinPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - PaperCupPhoneSignalSocket
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref JoinFunction
+      Principal: apigateway.amazonaws.com
+
+
+Outputs:
+  UserTableArn:
+    Description: "UserTable ARN"
+    Value: !GetAtt UserTable.Arn
+
+  RoomTableArn:
+    Description: "RoomTable ARN"
+    Value: !GetAtt RoomTable.Arn
+
+  ConnectFunctionArn:
+    Description: "Connect function ARN"
+    Value: !GetAtt ConnectFunction.Arn
+
+  DisconnectFunctionArn:
+    Description: "Disconnect function ARN"
+    Value: !GetAtt DisconnectFunction.Arn
+
+  MessageFunctionArn:
+    Description: "Message function ARN"
+    Value: !GetAtt MessageFunction.Arn
+
+  JoinFunctionArn:
+    Description: "JoinFunction ARN"
+    Value: !GetAtt JoinFunction.Arn
+
+  WebSocketURI:
+    Description: "The WSS Protocol URI to connect to"
+    Value: !Join [ '', [ 'wss://', !Ref PaperCupPhoneSignalSocket, '.execute-api.',!Ref 'AWS::Region','.amazonaws.com/',!Ref 'Stage'] ]

@@ -1,0 +1,5 @@
+node_modules
+.idea
+.aws-sam
+dist
+package-lock.json
