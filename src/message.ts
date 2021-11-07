@@ -1,14 +1,15 @@
 import {ApiGatewayManagementApi} from 'aws-sdk'
 import Dao from './dao'
+import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda";
 
-export async function handler(event: any) {
+export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const apiGatewayManagementApi = new ApiGatewayManagementApi({
         apiVersion: '2018-11-29',
         endpoint: event.requestContext.domainName + '/' + event.requestContext.stage
     })
 
     let connectionId = event.requestContext.connectionId
-    let postData = JSON.parse(event.body)
+    let postData = JSON.parse(event.body!)
     postData.message.sender = connectionId
 
     if (postData.message.to) {

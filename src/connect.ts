@@ -1,5 +1,6 @@
 import Dao from './dao'
+import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda";
 
-export async function handler(event: any) {
- return await new Dao().createUser(event.requestContext.connectionId)
+export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+    return await new Dao().createUser(event.requestContext.connectionId)
 }

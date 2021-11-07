@@ -1,5 +1,5 @@
 node_modules
 .idea
 .aws-sam
-dist
+handlers
 package-lock.json

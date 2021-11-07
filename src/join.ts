@@ -1,10 +1,11 @@
 import {ApiGatewayManagementApi} from 'aws-sdk'
 import twilio from 'twilio'
 import Dao from './dao'
+import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda";
 
 const dao = new Dao()
 
-export async function handler(event: any) {
+export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const apiGatewayManagementApi = new ApiGatewayManagementApi({
         apiVersion: '2018-11-29',
         endpoint: event.requestContext.domainName + '/' + event.requestContext.stage
@@ -13,7 +14,7 @@ export async function handler(event: any) {
     const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
     let token = await client.tokens.create()
 
-    let postData = JSON.parse(event.body)
+    let postData = JSON.parse(event.body!)
     let room = await dao.getRoom(postData.room.name)
 
     if (room && !room.Item) {
@@ -29,7 +30,7 @@ export async function handler(event: any) {
 }
 
 
-const userJoinedToRoom = async (apiGatewayManagementApi: ApiGatewayManagementApi, roomName: string, connectionId: string, token: any) => {
+const userJoinedToRoom = async (apiGatewayManagementApi: ApiGatewayManagementApi, roomName: string, connectionId?: string, token?: any) => {
 
     let room = await dao.getRoom(roomName)
 

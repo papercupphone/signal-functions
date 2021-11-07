@@ -40,7 +40,7 @@ export default class Dao {
         }
     }
 
-    deleteFromUsers = async (connectionId: string) => {
+    deleteFromUsers = async (connectionId?: string) => {
         try {
             await ddb.delete({
                     TableName: process.env.USER_TABLE_NAME || "",
@@ -54,7 +54,7 @@ export default class Dao {
         }
     }
 
-    getUser = async (connectionId: string) => {
+    getUser = async (connectionId?: string) => {
         try {
             return await ddb.get({
                 TableName: process.env.USER_TABLE_NAME || "",
@@ -67,7 +67,7 @@ export default class Dao {
         }
     }
 
-    createUser = async (connectionId: string) => {
+    createUser = async (connectionId?: string) => {
         try {
             await ddb.put({
                 TableName: process.env.USER_TABLE_NAME || "",
@@ -82,7 +82,7 @@ export default class Dao {
         return {statusCode: 200, body: 'Connected.'}
     }
 
-    createRoom = async (roomName: string, connectionId: string) => {
+    createRoom = async (roomName: string, connectionId?: string) => {
         try {
             return await ddb.put({
                 TableName: process.env.ROOM_TABLE_NAME || "",
@@ -96,7 +96,7 @@ export default class Dao {
         }
     }
 
-    addUserToRoom = async (roomName: string, connectionId: string) => {
+    addUserToRoom = async (roomName: string, connectionId?: string) => {
         try {
             return await ddb.update({
                 TableName: process.env.ROOM_TABLE_NAME || "",
@@ -117,7 +117,7 @@ export default class Dao {
         }
     }
 
-    updateUser = async (roomName: string, connectionId: string) => {
+    updateUser = async (roomName: string, connectionId?: string) => {
         try {
             return await ddb.update({
                 TableName: process.env.USER_TABLE_NAME || "",

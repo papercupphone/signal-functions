@@ -1,7 +1,8 @@
 import {ApiGatewayManagementApi} from 'aws-sdk'
 import Dao from './dao'
+import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda";
 
-export async function handler(event: any) {
+export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const apiGatewayManagementApi = new ApiGatewayManagementApi({
         apiVersion: '2018-11-29',
         endpoint: event.requestContext.domainName + '/' + event.requestContext.stage
@@ -12,6 +13,9 @@ export async function handler(event: any) {
         await dao.deleteUserFromRoom(user.Item)
         await dao.deleteFromUsers(event.requestContext.connectionId)
         await userDisconnectedToRoom(dao, apiGatewayManagementApi, user.Item)
+        return {statusCode: 200, body: 'Disconnected.'}
+    } else {
+        return {statusCode: 400, body: 'User not found.'}
     }
 }
 
