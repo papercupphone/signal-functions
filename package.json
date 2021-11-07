@@ -16,6 +16,9 @@
   "scripts": {
     "build": "node_modules/typescript/bin/tsc"
   },
+  "files": [
+    "/handlers"
+  ],
   "author": "Ekin Gün Öncü",
   "license": "ISC"
 }
