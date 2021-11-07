@@ -165,7 +165,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./
-      Handler: connect.handler
+      Handler: dist/connect.handler
       MemorySize: 256
       Runtime: nodejs14.x
       Timeout: 60
@@ -196,7 +196,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./
-      Handler: disconnect.handler
+      Handler: dist/disconnect.handler
       MemorySize: 256
       Runtime: nodejs14.x
       Timeout: 60
@@ -227,7 +227,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./
-      Handler: message.handler
+      Handler: dist/message.handler
       Timeout: 60
       MemorySize: 256
       Runtime: nodejs14.x
@@ -258,7 +258,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./
-      Handler: join.handler
+      Handler: dist/join.handler
       Timeout: 60
       MemorySize: 256
       Runtime: nodejs14.x
