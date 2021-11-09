@@ -29,6 +29,10 @@ Parameters:
     Type: String
 
 Resources:
+  PaperCupPhoneSignalApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
   PaperCupPhoneSignalSocket:
     Type: AWS::ApiGatewayV2::Api
     Properties:
@@ -201,12 +205,15 @@ Resources:
       Runtime: nodejs14.x
       Timeout: 60
       Events:
-        ProxyResource:
+        ApiEvent:
           Type: Api
-          Name: PaperCupPhoneRestApi
+          Name: PaperCupPhoneSignalApi
+          StageName: prod
           Properties:
-            Path: /{proxy+}
+            Path: /leave
             Method: any
+            RestApiId:
+              Ref: PaperCupPhoneSignalApi
           Cors:
             AllowHeaders: "'Content-Type'"
             AllowMethods: "'*'"
@@ -215,6 +222,11 @@ Resources:
         Variables:
           USER_TABLE_NAME: !Ref UserTableName
           ROOM_TABLE_NAME: !Ref RoomTableName
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UserTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref RoomTableName
   LeavePermission:
     Type: AWS::Lambda::Permission
     Properties:
