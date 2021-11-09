@@ -192,6 +192,40 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref ConnectFunction
       Principal: apigateway.amazonaws.com
+  LeaveFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: handlers/leave.handler
+      MemorySize: 256
+      Runtime: nodejs14.x
+      Timeout: 60
+      Events:
+        ProxyResource:
+          Name: PaperCupPhoneRestApi
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: any
+          Cors:
+            AllowOrigin: "'*'"
+            AllowHeaders: "'Content-Type'"
+            AllowMethods: "'*'"
+      Environment:
+        Variables:
+          USER_TABLE_NAME: !Ref UserTableName
+          ROOM_TABLE_NAME: !Ref RoomTableName
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UserTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref RoomTableName
+        - Statement:
+            - Effect: Allow
+              Action:
+                - 'execute-api:ManageConnections'
+              Resource:
+                - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PaperCupPhoneSignalSocket}/*'
   DisconnectFunction:
     Type: AWS::Serverless::Function
     Properties:
