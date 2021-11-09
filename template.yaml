@@ -202,30 +202,25 @@ Resources:
       Timeout: 60
       Events:
         ProxyResource:
-          Name: PaperCupPhoneRestApi
           Type: Api
+          Name: PaperCupPhoneRestApi
           Properties:
             Path: /{proxy+}
             Method: any
           Cors:
-            AllowOrigin: "'*'"
             AllowHeaders: "'Content-Type'"
             AllowMethods: "'*'"
+            AllowOrigin: "'*'"
       Environment:
         Variables:
           USER_TABLE_NAME: !Ref UserTableName
           ROOM_TABLE_NAME: !Ref RoomTableName
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref UserTableName
-        - DynamoDBCrudPolicy:
-            TableName: !Ref RoomTableName
-        - Statement:
-            - Effect: Allow
-              Action:
-                - 'execute-api:ManageConnections'
-              Resource:
-                - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PaperCupPhoneSignalSocket}/*'
+  LeavePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LeaveFunction
+      Principal: apigateway.amazonaws.com
   DisconnectFunction:
     Type: AWS::Serverless::Function
     Properties:
