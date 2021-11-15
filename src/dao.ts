@@ -78,10 +78,10 @@ export default class Dao {
                 }
             }).promise()
         } catch (err) {
-            return {statusCode: 500, body: "Failed to connect: " + JSON.stringify(err)}
+            return {statusCode: 500, body: "dao::Failed to connect: " + JSON.stringify(err)}
         }
 
-        return {statusCode: 200, body: "Connected."}
+        return {statusCode: 200, body: "dao::Connected."}
     }
 
     createRoom = async (roomName: string, connectionId?: string) => {

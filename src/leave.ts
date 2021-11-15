@@ -9,11 +9,11 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         if (user) {
             await dao.deleteUserFromRoom(user.Item)
             await dao.deleteFromUsers(body.connectionId)
-            return {statusCode: 200, body: 'Disconnected.'}
+            return {statusCode: 200, body: 'leave::Disconnected.'}
         } else {
-            return {statusCode: 400, body: 'User not found.'}
+            return {statusCode: 400, body: 'leave::User not found.'}
         }
     }else{
-        return {statusCode: 400, body: 'Bad request'}
+        return {statusCode: 400, body: 'leave::Bad request'}
     }
 }

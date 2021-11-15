@@ -40,5 +40,5 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
     }
 
-    return {statusCode: 200, body: 'Done.'}
+    return {statusCode: 200, body: 'message::Done.'}
 }

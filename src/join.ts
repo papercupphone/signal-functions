@@ -26,7 +26,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     await dao.updateUser(postData.room.name, event.requestContext.connectionId)
     await userJoinedToRoom(apiGatewayManagementApi, postData.room.name, event.requestContext.connectionId, token)
 
-    return {statusCode: 200, body: 'Done.'}
+    return {statusCode: 200, body: 'join::Done.'}
 }
 
 

@@ -13,9 +13,9 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         await dao.deleteUserFromRoom(user.Item)
         await dao.deleteFromUsers(event.requestContext.connectionId)
         await userDisconnectedToRoom(dao, apiGatewayManagementApi, user.Item)
-        return {statusCode: 200, body: "Disconnected."}
+        return {statusCode: 200, body: "disconnect::Disconnected."}
     } else {
-        return {statusCode: 400, body: "User not found."}
+        return {statusCode: 400, body: "disconnect::User not found."}
     }
 }
 
