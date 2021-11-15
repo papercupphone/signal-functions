@@ -262,7 +262,7 @@ Resources:
       - PaperCupPhoneSignalSocket
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref ConnectFunction
+      FunctionName: !Ref DisconnectFunction
       Principal: apigateway.amazonaws.com
   MessageFunction:
     Type: AWS::Serverless::Function
