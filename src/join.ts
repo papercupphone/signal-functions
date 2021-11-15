@@ -1,14 +1,14 @@
-import {ApiGatewayManagementApi} from 'aws-sdk'
-import twilio from 'twilio'
-import Dao from './dao'
+import {ApiGatewayManagementApi} from "aws-sdk"
+import twilio from "twilio"
+import Dao from "./dao"
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda";
 
 const dao = new Dao()
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const apiGatewayManagementApi = new ApiGatewayManagementApi({
-        apiVersion: '2018-11-29',
-        endpoint: event.requestContext.domainName + '/' + event.requestContext.stage
+        apiVersion: "2018-11-29",
+        endpoint: event.requestContext.domainName + "/" + event.requestContext.stage
     })
 
     const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
@@ -26,7 +26,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     await dao.updateUser(postData.room.name, event.requestContext.connectionId)
     await userJoinedToRoom(apiGatewayManagementApi, postData.room.name, event.requestContext.connectionId, token)
 
-    return {statusCode: 200, body: 'join::Done.'}
+    return {statusCode: 200, body: "join::Done."}
 }
 
 

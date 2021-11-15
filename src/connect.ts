@@ -1,4 +1,4 @@
-import Dao from './dao'
+import Dao from "./dao"
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda";
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {

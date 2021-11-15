@@ -1,11 +1,11 @@
-import {ApiGatewayManagementApi} from 'aws-sdk'
-import Dao from './dao'
+import {ApiGatewayManagementApi} from "aws-sdk"
+import Dao from "./dao"
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda";
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const apiGatewayManagementApi = new ApiGatewayManagementApi({
-        apiVersion: '2018-11-29',
-        endpoint: event.requestContext.domainName + '/' + event.requestContext.stage
+        apiVersion: "2018-11-29",
+        endpoint: event.requestContext.domainName + "/" + event.requestContext.stage
     })
 
     let connectionId = event.requestContext.connectionId
@@ -40,5 +40,5 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
     }
 
-    return {statusCode: 200, body: 'message::Done.'}
+    return {statusCode: 200, body: "message::Done."}
 }
