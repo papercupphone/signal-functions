@@ -1,28 +1,30 @@
-import {DynamoDB} from 'aws-sdk'
+import {DynamoDB} from "aws-sdk"
 
-const ddb = new DynamoDB.DocumentClient({apiVersion: '2012-08-10', region: process.env.AWS_REGION})
+const ddb = new DynamoDB.DocumentClient({apiVersion: "2012-08-10", region: process.env.AWS_REGION})
 
 export default class Dao {
 
     deleteUserFromRoom = async (user: any) => {
-        let room = await this.getRoom(user.room)
-        if (room && room.Item) {
-            let indexOfUser = room.Item.users.findIndex((i: string) => i === user.id)
+        if (user.room) {
+            let room = await this.getRoom(user.room)
+            if (room && room.Item) {
+                let indexOfUser = room.Item.users.findIndex((i: string) => i === user.id)
 
-            try {
-                return await ddb.update({
-                    ExpressionAttributeNames: {
-                        "#users": "users"
-                    },
-                    Key: {
-                        "name": user.room
-                    },
-                    TableName: process.env.ROOM_TABLE_NAME || "",
-                    UpdateExpression: "REMOVE #users[" + indexOfUser + "]",
-                    ReturnValues: "ALL_NEW",
-                }).promise()
-            } catch (err) {
-                console.log(err)
+                try {
+                    return await ddb.update({
+                        ExpressionAttributeNames: {
+                            "#users": "users"
+                        },
+                        Key: {
+                            "name": user.room
+                        },
+                        TableName: process.env.ROOM_TABLE_NAME || "",
+                        UpdateExpression: "REMOVE #users[" + indexOfUser + "]",
+                        ReturnValues: "ALL_NEW",
+                    }).promise()
+                } catch (err) {
+                    console.log(err)
+                }
             }
         }
     }
@@ -32,7 +34,7 @@ export default class Dao {
             return await ddb.get({
                 TableName: process.env.ROOM_TABLE_NAME || "",
                 Key: {
-                    'name': roomName
+                    "name": roomName
                 }
             }).promise()
         } catch (err) {
@@ -45,7 +47,7 @@ export default class Dao {
             await ddb.delete({
                     TableName: process.env.USER_TABLE_NAME || "",
                     Key: {
-                        id: connectionId
+                        "id": connectionId
                     }
                 }
             ).promise()
@@ -59,7 +61,7 @@ export default class Dao {
             return await ddb.get({
                 TableName: process.env.USER_TABLE_NAME || "",
                 Key: {
-                    'id': connectionId
+                    "id": connectionId
                 }
             }).promise()
         } catch (err) {
@@ -72,14 +74,14 @@ export default class Dao {
             await ddb.put({
                 TableName: process.env.USER_TABLE_NAME || "",
                 Item: {
-                    id: connectionId
+                    "id": connectionId
                 }
             }).promise()
         } catch (err) {
-            return {statusCode: 500, body: 'Failed to connect: ' + JSON.stringify(err)}
+            return {statusCode: 500, body: "Failed to connect: " + JSON.stringify(err)}
         }
 
-        return {statusCode: 200, body: 'Connected.'}
+        return {statusCode: 200, body: "Connected."}
     }
 
     createRoom = async (roomName: string, connectionId?: string) => {
@@ -105,10 +107,10 @@ export default class Dao {
                 },
                 UpdateExpression: "set #users = list_append(#users, :i)",
                 ExpressionAttributeValues: {
-                    ':i': [connectionId],
+                    ":i": [connectionId],
                 },
                 ExpressionAttributeNames: {
-                    '#users': 'users'
+                    "#users": "users"
                 },
                 ReturnValues: "UPDATED_NEW"
             }).promise()
@@ -126,10 +128,10 @@ export default class Dao {
                 },
                 UpdateExpression: "set #room = :r",
                 ExpressionAttributeValues: {
-                    ':r': roomName,
+                    ":r": roomName,
                 },
                 ExpressionAttributeNames: {
-                    '#room': 'room'
+                    "#room": "room"
                 },
                 ReturnValues: "UPDATED_NEW"
             }).promise()
