@@ -10,8 +10,10 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     let dao = new Dao()
     let user = await dao.getUser(event.requestContext.connectionId)
     if (user) {
+        console.log(user)
         await dao.deleteUserFromRoom(user.Item)
         await dao.deleteFromUsers(event.requestContext.connectionId)
+        console.log("hop")
         await userDisconnectedToRoom(dao, apiGatewayManagementApi, user.Item)
         return {statusCode: 200, body: 'Disconnected.'}
     } else {
