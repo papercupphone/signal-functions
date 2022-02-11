@@ -32,6 +32,7 @@ Resources:
   PaperCupPhoneSignalApi:
     Type: AWS::Serverless::Api
     Properties:
+      Name: PaperCupPhoneSignalApi
       StageName: prod
   PaperCupPhoneSignalSocket:
     Type: AWS::ApiGatewayV2::Api
@@ -173,6 +174,7 @@ Resources:
       MemorySize: 256
       Runtime: nodejs14.x
       Timeout: 60
+      FunctionName: ConnectFunction
       Environment:
         Variables:
           USER_TABLE_NAME: !Ref UserTableName
@@ -204,6 +206,7 @@ Resources:
       MemorySize: 256
       Runtime: nodejs14.x
       Timeout: 60
+      FunctionName: LeaveFunction
       Events:
         ApiEvent:
           Type: Api
@@ -241,6 +244,7 @@ Resources:
       MemorySize: 256
       Runtime: nodejs14.x
       Timeout: 60
+      FunctionName: DisconnectFunction
       Environment:
         Variables:
           USER_TABLE_NAME: !Ref UserTableName
@@ -272,6 +276,7 @@ Resources:
       Timeout: 60
       MemorySize: 256
       Runtime: nodejs14.x
+      FunctionName: MessageFunction
       Environment:
         Variables:
           USER_TABLE_NAME: !Ref UserTableName
@@ -303,6 +308,7 @@ Resources:
       Timeout: 60
       MemorySize: 256
       Runtime: nodejs14.x
+      FunctionName: JoinFunction
       Environment:
         Variables:
           USER_TABLE_NAME: !Ref UserTableName
