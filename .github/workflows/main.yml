@@ -40,4 +40,4 @@ jobs:
         run: |
           npm install && npm install --include=dev && npm run build
           sam build
-          sam deploy --stack-name papercupphone --s3-bucket lambda.pcp --capabilities CAPABILITY_IAM --parameter-overrides AccountSid=${{secrets.TWILIO_ACCOUNT_SID}} AuthToken=${{secrets.TWILIO_AUTH_TOKEN}}
+          sam deploy --stack-name iseecam --s3-bucket iseecam --capabilities CAPABILITY_IAM --parameter-overrides AccountSid=${{secrets.TWILIO_ACCOUNT_SID}} AuthToken=${{secrets.TWILIO_AUTH_TOKEN}}

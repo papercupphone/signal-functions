@@ -29,21 +29,21 @@ Parameters:
     Type: String
 
 Resources:
-  PaperCupPhoneSignalApi:
+  SignalApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: PaperCupPhoneSignalApi
+      Name: SignalApi
       StageName: prod
-  PaperCupPhoneSignalSocket:
+  SignalSocket:
     Type: AWS::ApiGatewayV2::Api
     Properties:
-      Name: PaperCupPhoneSignalSocket
+      Name: SignalSocket
       ProtocolType: WEBSOCKET
       RouteSelectionExpression: "$request.body.action"
   ConnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref PaperCupPhoneSignalSocket
+      ApiId: !Ref SignalSocket
       RouteKey: $connect
       AuthorizationType: NONE
       OperationName: ConnectRoute
@@ -54,7 +54,7 @@ Resources:
   ConnectInteg:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref PaperCupPhoneSignalSocket
+      ApiId: !Ref SignalSocket
       Description: Connect Integration
       IntegrationType: AWS_PROXY
       IntegrationUri:
@@ -63,7 +63,7 @@ Resources:
   DisconnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref PaperCupPhoneSignalSocket
+      ApiId: !Ref SignalSocket
       RouteKey: $disconnect
       AuthorizationType: NONE
       OperationName: DisconnectRoute
@@ -74,7 +74,7 @@ Resources:
   DisconnectInteg:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref PaperCupPhoneSignalSocket
+      ApiId: !Ref SignalSocket
       Description: Disconnect Integration
       IntegrationType: AWS_PROXY
       IntegrationUri:
@@ -83,7 +83,7 @@ Resources:
   MessageRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref PaperCupPhoneSignalSocket
+      ApiId: !Ref SignalSocket
       RouteKey: message
       AuthorizationType: NONE
       OperationName: SendRoute
@@ -94,7 +94,7 @@ Resources:
   MessageInteg:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref PaperCupPhoneSignalSocket
+      ApiId: !Ref SignalSocket
       Description: Send Integration
       IntegrationType: AWS_PROXY
       IntegrationUri:
@@ -103,7 +103,7 @@ Resources:
   JoinRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref PaperCupPhoneSignalSocket
+      ApiId: !Ref SignalSocket
       RouteKey: join
       AuthorizationType: NONE
       OperationName: SendRoute
@@ -114,7 +114,7 @@ Resources:
   JoinInteg:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref PaperCupPhoneSignalSocket
+      ApiId: !Ref SignalSocket
       Description: Send Integration
       IntegrationType: AWS_PROXY
       IntegrationUri:
@@ -128,14 +128,14 @@ Resources:
       - MessageRoute
       - JoinRoute
     Properties:
-      ApiId: !Ref PaperCupPhoneSignalSocket
+      ApiId: !Ref SignalSocket
   Stage:
     Type: AWS::ApiGatewayV2::Stage
     Properties:
       StageName: prod
       Description: prod Stage
       DeploymentId: !Ref Deployment
-      ApiId: !Ref PaperCupPhoneSignalSocket
+      ApiId: !Ref SignalSocket
   RoomTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -189,11 +189,11 @@ Resources:
               Action:
                 - 'execute-api:ManageConnections'
               Resource:
-                - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PaperCupPhoneSignalSocket}/*'
+                - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SignalSocket}/*'
   ConnectPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - PaperCupPhoneSignalSocket
+      - SignalSocket
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref ConnectFunction
@@ -210,13 +210,13 @@ Resources:
       Events:
         ApiEvent:
           Type: Api
-          Name: PaperCupPhoneSignalApi
+          Name: SignalApi
           StageName: prod
           Properties:
             Path: /leave
             Method: any
             RestApiId:
-              Ref: PaperCupPhoneSignalApi
+              Ref: SignalApi
           Cors:
             AllowHeaders: "'Content-Type'"
             AllowMethods: "'*'"
@@ -259,11 +259,11 @@ Resources:
               Action:
                 - 'execute-api:ManageConnections'
               Resource:
-                - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PaperCupPhoneSignalSocket}/*'
+                - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SignalSocket}/*'
   DisconnectPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - PaperCupPhoneSignalSocket
+      - SignalSocket
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref DisconnectFunction
@@ -291,11 +291,11 @@ Resources:
               Action:
                 - 'execute-api:ManageConnections'
               Resource:
-                - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PaperCupPhoneSignalSocket}/*'
+                - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SignalSocket}/*'
   MessagePermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - PaperCupPhoneSignalSocket
+      - SignalSocket
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref MessageFunction
@@ -325,11 +325,11 @@ Resources:
               Action:
                 - 'execute-api:ManageConnections'
               Resource:
-                - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PaperCupPhoneSignalSocket}/*'
+                - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SignalSocket}/*'
   JoinPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - PaperCupPhoneSignalSocket
+      - SignalSocket
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref JoinFunction
@@ -363,4 +363,4 @@ Outputs:
 
   WebSocketURI:
     Description: "The WSS Protocol URI to connect to"
-    Value: !Join [ '', [ 'wss://', !Ref PaperCupPhoneSignalSocket, '.execute-api.',!Ref 'AWS::Region','.amazonaws.com/',!Ref 'Stage'] ]
+    Value: !Join [ '', [ 'wss://', !Ref SignalSocket, '.execute-api.',!Ref 'AWS::Region','.amazonaws.com/',!Ref 'Stage'] ]
